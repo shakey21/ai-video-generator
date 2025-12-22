@@ -4,6 +4,7 @@ import torch
 import gc
 from pathlib import Path
 from tqdm import tqdm
+from typing import List, Dict, Optional
 from .detector import PersonDetector
 from .generator import ModelGenerator
 from utils.video_utils import VideoReader, VideoWriter
