@@ -10,7 +10,7 @@ echo "🚀 Setting up AI Video Generator on RunPod A100..."
 echo "📦 Updating system packages..."
 apt-get update -qq
 apt-get install -y git ffmpeg libsm6 libxext6 libx264-dev \
-    libavcodec-dev libavformat-dev libswscale-dev libavresample-dev -qq
+    libavcodec-dev libavformat-dev libswscale-dev -qq
 
 # Install Python dependencies
 echo "🐍 Installing Python packages..."
