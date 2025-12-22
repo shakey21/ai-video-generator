@@ -12,6 +12,29 @@ class VideoProcessor:
         self.generator = ModelGenerator()
         self.frame_cache = []  # For temporal smoothing
         self.cache_size = 3  # Number of frames to blend
+        self.reels_width = 1080
+        self.reels_height = 1920
+    
+    def _convert_to_reels_format(self, frame: np.ndarray) -> np.ndarray:
+        """Convert frame to Instagram Reels format (1080x1920 portrait)"""
+        h, w = frame.shape[:2]
+        target_aspect = self.reels_width / self.reels_height  # 9:16
+        current_aspect = w / h
+        
+        if current_aspect > target_aspect:
+            # Frame is too wide, crop sides
+            new_width = int(h * target_aspect)
+            x_offset = (w - new_width) // 2
+            frame = frame[:, x_offset:x_offset + new_width]
+        else:
+            # Frame is too tall, crop top/bottom
+            new_height = int(w / target_aspect)
+            y_offset = (h - new_height) // 2
+            frame = frame[y_offset:y_offset + new_height, :]
+        
+        # Resize to 1080x1920
+        return cv2.resize(frame, (self.reels_width, self.reels_height), 
+                         interpolation=cv2.INTER_LANCZOS4)
     
     def replace_model(
         self,
@@ -28,17 +51,18 @@ class VideoProcessor:
         # Open video
         reader = VideoReader(str(video_path))
         
-        # Use high-quality codec
+        # Output in Instagram Reels format (1080x1920)
         writer = VideoWriter(
             str(output_path),
             fps=reader.fps,
-            width=reader.width,
-            height=reader.height,
+            width=self.reels_width,
+            height=self.reels_height,
             quality='high'
         )
         
         total_frames = reader.frame_count
         print(f"Processing {total_frames} frames at {reader.width}x{reader.height}")
+        print(f"Output format: {self.reels_width}x{self.reels_height} (Instagram Reels)")
         
         try:
             for i, frame in enumerate(tqdm(reader, total=total_frames, desc="Processing")):
@@ -90,6 +114,9 @@ class VideoProcessor:
                 else:
                     # No person detected
                     result = frame
+                
+                # Convert to Instagram Reels format
+                result = self._convert_to_reels_format(result)
                 
                 writer.write(result)
             
