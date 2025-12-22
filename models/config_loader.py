@@ -60,7 +60,7 @@ class ModelConfig:
     def get_base_model(self, model_name: str = "default_model") -> str:
         """Get base model path"""
         model = self.get_model(model_name)
-        return model.get('base_model', 'SG161222/Realistic_Vision_V6.0_B1_noVAE')
+        return model.get('base_model', 'runwayml/stable-diffusion-v1-5')
     
     def update_model(self, model_name: str, updates: Dict[str, Any]):
         """Update model configuration and save to file"""

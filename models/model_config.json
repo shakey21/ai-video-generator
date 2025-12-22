@@ -12,6 +12,6 @@
       "canny": 0.55
     },
     "seed": 424242,
-    "base_model": "SG161222/Realistic_Vision_V6.0_B1_noVAE"
+    "base_model": "runwayml/stable-diffusion-v1-5"
   }
 }

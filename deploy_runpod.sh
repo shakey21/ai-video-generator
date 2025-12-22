@@ -39,11 +39,13 @@ controlnet_canny = ControlNetModel.from_pretrained(
     torch_dtype=torch.float16
 )
 
-print("Downloading Realistic Vision v6.0...")
+print("Downloading Realistic Stable Diffusion 1.5...")
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
-    "SG161222/Realistic_Vision_V6.0_B1_noVAE",
+    "runwayml/stable-diffusion-v1-5",
     controlnet=[controlnet_pose, controlnet_depth, controlnet_canny],
-    torch_dtype=torch.float16
+    torch_dtype=torch.float16,
+    safety_checker=None,
+    use_safetensors=True
 )
 print("✓ Models cached successfully")
 EOF
