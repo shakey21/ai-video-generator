@@ -12,8 +12,8 @@
     ],
     "fashion_notes": "body-hugging fabrics, thin stretchy materials, casual at-home wear, slightly imperfect fit, influencer loungewear aesthetic",
     "negative_prompt": "studio lighting, fashion editorial look, glamour photography, stiff posing, frozen expressions, overly sharp focus, blurry, distorted, bad anatomy, extra limbs, cartoon, anime, illustration",
-    "inference_steps": 50,
-    "guidance_scale": 9,
+    "inference_steps": 60,
+    "guidance_scale": 8.5,
     "seed": 42
   }
 }

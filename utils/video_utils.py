@@ -27,25 +27,38 @@ class VideoReader:
 class VideoWriter:
     def __init__(self, output_path: str, fps: int, width: int, height: int, quality='high'):
         """
-        High-quality video writer
+        High-quality video writer with H.264 codec
         
         Args:
-            quality: 'high' for H.264 high quality, 'medium' for faster encoding
+            quality: 'high' for maximum quality
         """
-        # Try multiple codecs in order of preference for compatibility
+        # Use FFmpeg via OpenCV for better quality control
+        # Try H.264 codecs in order of preference
         codecs = [
-            'mp4v',  # MPEG-4 - most compatible
-            'avc1',  # H.264
-            'X264',  # Alternative H.264
-            'XVID'   # Fallback
+            ('avc1', 'H.264 AVC'),
+            ('H264', 'H.264'),
+            ('X264', 'x264'),
+            ('mp4v', 'MPEG-4 fallback')
         ]
         
         self.writer = None
-        for codec in codecs:
+        self.output_path = output_path
+        
+        for codec, name in codecs:
             fourcc = cv2.VideoWriter_fourcc(*codec)
-            writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+            # Higher quality parameters
+            writer = cv2.VideoWriter(
+                output_path, 
+                fourcc, 
+                fps, 
+                (width, height),
+                params=[
+                    cv2.VIDEOWRITER_PROP_QUALITY, 100,  # Maximum quality
+                ]
+            )
             if writer.isOpened():
                 self.writer = writer
+                print(f"Using {name} codec for high-quality output")
                 break
             writer.release()
         
