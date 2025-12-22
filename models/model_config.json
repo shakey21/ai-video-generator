@@ -1,9 +1,9 @@
 {
   "default_model": {
     "name": "Bop-Style Video Influencer",
-    "base_prompt": "raw footage real person, 22 year old blonde woman, wavy hair, hazel eyes, fair skin freckles, athletic build, black crop top, gray shorts",
-    "style_modifiers": "professional photography, high quality, detailed, sharp focus, 8k resolution, photorealistic, cinematic lighting, filmed video, unedited raw footage, natural lighting, authentic skin pores, natural imperfections, documentary candid shot",
-    "negative_prompt": "blurry, low quality, distorted, deformed, amateur, grainy, shaky, artifacts, jittery, flickering, unstable, fake, rendered, cgi, 3d, artificial, computer generated, cartoon, anime, illustration, painting, drawing, art, digital art, sketch, bad anatomy, extra limbs, missing limbs, deformed body, disfigured face, bad proportions, duplicate, multiple people, watermark, text, signature, username, logo, plastic skin, doll, mannequin, smooth skin, airbrushed, perfect skin, studio lighting, different person, face change, clothing change",
+    "base_prompt": "raw footage, 22 year old blonde woman, wavy hair, hazel eyes, fair skin freckles, athletic build, black crop top, gray shorts",
+    "style_modifiers": "professional photography, high quality, sharp focus, photorealistic, cinematic lighting, natural lighting, authentic skin texture, realistic details",
+    "negative_prompt": "blurry, low quality, distorted, deformed, grainy, shaky, jittery, flickering, unstable, fake, cgi, 3d, cartoon, anime, illustration, painting, bad anatomy, extra limbs, deformed body, disfigured face, duplicate, multiple people, watermark, text, plastic skin, doll, airbrushed, different person",
     "inference_steps": 40,
     "guidance_scale": 10.0,
     "controlnet_scales": {
