@@ -96,13 +96,6 @@ def create_ui():
                         value=False,
                         info="Extract clean background for potential replacement"
                     )
-                    gr.Markdown("""
-                    **Enabled by default:**
-                    - 📹 Camera Stabilization
-                    - 🎬 Segment-based Processing (3 segments)
-                    - 👣 Foot Locking
-                    - ⏱️ Enhanced Temporal Consistency
-                    """)
                 
                 process_btn = gr.Button("Process Video", variant="primary", size="lg")
             
