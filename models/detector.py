@@ -7,12 +7,32 @@ from typing import Tuple, Optional
 from ultralytics import YOLO
 import torch
 
+try:
+    from controlnet_aux import MidasDetector
+    MIDAS_AVAILABLE = True
+except:
+    MIDAS_AVAILABLE = False
+    print("⚠️  MiDaS not available - depth detection disabled")
+
 class PersonDetector:
     def __init__(self):
-        """Initialize YOLOv8 for accurate person detection"""
+        """Initialize YOLOv8 for accurate person detection + depth estimator"""
         print("Loading YOLOv8 person detector...")
         self.yolo = YOLO('yolov8m-seg.pt')  # Medium model for accuracy
         self.yolo.to('mps' if torch.backends.mps.is_available() else 'cpu')
+        
+        # Load depth estimator for better 3D understanding
+        if MIDAS_AVAILABLE:
+            try:
+                print("Loading MiDaS depth estimator...")
+                self.depth_estimator = MidasDetector.from_pretrained("lllyasviel/Annotators")
+                print("✅ Depth estimator loaded")
+            except Exception as e:
+                print(f"⚠️  Could not load depth estimator: {e}")
+                self.depth_estimator = None
+        else:
+            self.depth_estimator = None
+        
         print("Person detector loaded")
         
         # Track previous frames for consistency
@@ -117,6 +137,47 @@ class PersonDetector:
             return pose_img
         
         return None
+    
+    def extract_depth(self, frame: np.ndarray) -> Optional[np.ndarray]:
+        """
+        Extract depth map using MiDaS
+        """
+        if self.depth_estimator is None:
+            # Fallback: simple gradient-based pseudo-depth
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            depth = cv2.GaussianBlur(gray, (5, 5), 0)
+            return depth
+        
+        try:
+            # Use MiDaS for accurate depth
+            depth_pil = self.depth_estimator(frame)
+            depth = np.array(depth_pil)
+            return depth
+        except Exception as e:
+            print(f"⚠️  Depth extraction failed: {e}")
+            # Fallback
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            return cv2.GaussianBlur(gray, (5, 5), 0)
+    
+    def extract_canny(self, frame: np.ndarray) -> np.ndarray:
+        """
+        Extract edge map using Canny edge detection
+        """
+        # Convert to grayscale
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+        # Apply Gaussian blur to reduce noise
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        
+        # Apply Canny edge detection
+        # Thresholds tuned for good edge quality
+        edges = cv2.Canny(blurred, 50, 150)
+        
+        # Dilate slightly to make edges more visible
+        kernel = np.ones((2, 2), np.uint8)
+        edges = cv2.dilate(edges, kernel, iterations=1)
+        
+        return edges
     
     def cleanup(self):
         """Cleanup resources"""

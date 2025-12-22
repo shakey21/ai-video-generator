@@ -52,6 +52,16 @@ class ModelConfig:
         model = self.get_model(model_name)
         return model.get('seed', 42)
     
+    def get_controlnet_scales(self, model_name: str = "default_model") -> Dict[str, float]:
+        """Get ControlNet conditioning scales"""
+        model = self.get_model(model_name)
+        return model.get('controlnet_scales', {'pose': 0.8, 'depth': 0.6, 'canny': 0.5})
+    
+    def get_base_model(self, model_name: str = "default_model") -> str:
+        """Get base model path"""
+        model = self.get_model(model_name)
+        return model.get('base_model', 'SG161222/Realistic_Vision_V6.0_B1_noVAE')
+    
     def update_model(self, model_name: str, updates: Dict[str, Any]):
         """Update model configuration and save to file"""
         if model_name not in self.config:

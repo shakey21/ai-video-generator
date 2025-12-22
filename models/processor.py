@@ -10,8 +10,8 @@ class VideoProcessor:
     def __init__(self):
         self.detector = PersonDetector()
         self.generator = ModelGenerator()
-        self.frame_cache = []  # For temporal smoothing
-        self.cache_size = 3  # Number of frames to blend
+        self.prev_frame = None  # For optical flow
+        self.prev_generated = None  # For temporal blending
     
     def replace_model(
         self,
@@ -20,10 +20,15 @@ class VideoProcessor:
         progress_callback=None
     ) -> str:
         """
-        High-quality video processing with temporal consistency
+        Photorealistic video processing with multi-ControlNet and temporal consistency
         """
         video_path = Path(video_path)
         output_path = Path("outputs") / f"replaced_{video_path.stem}.mp4"
+        
+        # Reset temporal state
+        self.generator.reset_temporal_state()
+        self.prev_frame = None
+        self.prev_generated = None
         
         # Open video
         reader = VideoReader(str(video_path))
@@ -38,85 +43,119 @@ class VideoProcessor:
         )
         
         total_frames = reader.frame_count
-        print(f"Processing {total_frames} frames at {reader.width}x{reader.height}")
+        print(f"🎬 Processing {total_frames} frames at {reader.width}x{reader.height}")
+        print(f"🎨 Using multi-ControlNet (pose + depth + canny edges)")
         
         try:
             for i, frame in enumerate(tqdm(reader, total=total_frames, desc="Processing")):
-                print(f"[Frame {i+1}/{total_frames}] Generating AI model...")
                 
                 if progress_callback:
                     progress_callback(
                         (i + 1) / total_frames,
-                        desc=f"Frame {i+1}/{total_frames} - Generating..."
+                        desc=f"Frame {i+1}/{total_frames} - AI Generation..."
                     )
                 
-                # Detect person and pose
+                # Extract all control signals
                 mask, person_region = self.detector.detect_and_segment(frame)
                 pose_image = self.detector.extract_pose(frame)
+                depth_image = self.detector.extract_depth(frame)
+                canny_image = self.detector.extract_canny(frame)
                 
                 if pose_image is not None and person_region is not None:
-                    # Generate replacement (uses JSON config)
-                    generated = self.generator.generate_replacement(pose_image)
+                    # Generate replacement with multi-ControlNet
+                    generated = self.generator.generate_replacement(
+                        pose_image=pose_image,
+                        depth_image=depth_image,
+                        canny_image=canny_image,
+                        original_frame=frame
+                    )
                     
-                    # High-quality resize to match frame
-                    if generated.shape[:2] != frame.shape[:2]:
-                        # Use LANCZOS4 for best quality downscaling/upscaling
-                        generated = cv2.resize(
-                            generated,
-                            (frame.shape[1], frame.shape[0]),
-                            interpolation=cv2.INTER_LANCZOS4
+                    # Apply temporal consistency with optical flow
+                    if self.prev_frame is not None and self.prev_generated is not None:
+                        generated = self._apply_optical_flow_consistency(
+                            frame, self.prev_frame, generated, self.prev_generated
                         )
-                        # Apply subtle sharpening after resize to restore detail
-                        kernel = np.array([[-0.5, -0.5, -0.5],
-                                          [-0.5,  5.0, -0.5],
-                                          [-0.5, -0.5, -0.5]])
-                        generated = cv2.filter2D(generated, -1, kernel * 0.3)
                     
-                    # Create smooth mask
-                    mask_3ch = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR).astype(float) / 255.0
+                    # High-quality compositing
+                    result = self._composite_with_background(
+                        generated, frame, mask
+                    )
                     
-                    # Feather edges for seamless blend
-                    mask_3ch = cv2.GaussianBlur(mask_3ch, (21, 21), 0)
-                    
-                    # Composite with feathered edges
-                    result = (
-                        generated * mask_3ch + 
-                        frame * (1 - mask_3ch)
-                    ).astype(np.uint8)
-                    
-                    # Temporal smoothing for consistency
-                    result = self._temporal_smooth(result)
+                    # Store for next frame
+                    self.prev_generated = generated.copy()
                     
                 else:
                     # No person detected
                     result = frame
                 
+                self.prev_frame = frame.copy()
                 writer.write(result)
             
         finally:
             reader.release()
             writer.release()
             self.detector.cleanup()
-            print(f"Output saved: {output_path}")
+            print(f"✅ Output saved: {output_path}")
         
         return str(output_path)
     
-    def _temporal_smooth(self, frame: np.ndarray) -> np.ndarray:
-        """Apply temporal smoothing for frame consistency"""
-        self.frame_cache.append(frame.copy())
+    def _composite_with_background(
+        self, 
+        generated: np.ndarray, 
+        original: np.ndarray, 
+        mask: np.ndarray
+    ) -> np.ndarray:
+        """High-quality compositing with feathered edges"""
+        # Convert mask to 3-channel float
+        mask_3ch = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR).astype(float) / 255.0
         
-        if len(self.frame_cache) > self.cache_size:
-            self.frame_cache.pop(0)
+        # Apply heavy feathering for seamless blend
+        mask_3ch = cv2.GaussianBlur(mask_3ch, (31, 31), 0)
         
-        if len(self.frame_cache) == 1:
-            return frame
+        # Composite
+        result = (
+            generated * mask_3ch + 
+            original * (1 - mask_3ch)
+        ).astype(np.uint8)
         
-        # Weighted average of recent frames
-        weights = np.array([0.2, 0.3, 0.5])[:len(self.frame_cache)]
-        weights = weights / weights.sum()
+        return result
+    
+    def _apply_optical_flow_consistency(
+        self,
+        curr_frame: np.ndarray,
+        prev_frame: np.ndarray,
+        curr_generated: np.ndarray,
+        prev_generated: np.ndarray
+    ) -> np.ndarray:
+        """Apply optical flow to ensure temporal consistency"""
         
-        smoothed = np.zeros_like(frame, dtype=float)
-        for weight, cached_frame in zip(weights, self.frame_cache):
-            smoothed += cached_frame * weight
+        # Calculate optical flow between frames
+        curr_gray = cv2.cvtColor(curr_frame, cv2.COLOR_BGR2GRAY)
+        prev_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
         
-        return smoothed.astype(np.uint8)
+        # Dense optical flow
+        flow = cv2.calcOpticalFlowFarneback(
+            prev_gray, curr_gray,
+            None, 0.5, 3, 15, 3, 5, 1.2, 0
+        )
+        
+        # Warp previous generated frame using flow
+        h, w = flow.shape[:2]
+        flow_map = np.column_stack([
+            (np.arange(w) + flow[:, :, 0].flatten()).astype(np.float32),
+            (np.arange(h).repeat(w) + flow[:, :, 1].flatten()).astype(np.float32)
+        ]).reshape(h, w, 2)
+        
+        warped_prev = cv2.remap(
+            prev_generated,
+            flow_map,
+            None,
+            cv2.INTER_LINEAR,
+            borderMode=cv2.BORDER_REPLICATE
+        )
+        
+        # Blend current with warped previous for temporal consistency
+        # Use 70% current, 30% warped previous
+        result = cv2.addWeighted(curr_generated, 0.7, warped_prev, 0.3, 0)
+        
+        return result
