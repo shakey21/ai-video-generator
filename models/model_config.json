@@ -2,14 +2,14 @@
   "default_model": {
     "name": "Bop-Style Video Influencer",
     "base_prompt": "raw footage real person, 22 year old blonde woman, wavy hair, hazel eyes, fair skin freckles, athletic build, black crop top, gray shorts",
-    "style_modifiers": "filmed video, unedited raw footage, natural lighting, handheld camera, authentic skin pores, natural imperfections, documentary candid shot, realistic motion blur",
-    "negative_prompt": "fake, rendered, cgi, 3d, artificial, computer generated, cartoon, anime, illustration, painting, drawing, art, digital art, sketch, low quality, low resolution, blurry, distorted, bad anatomy, extra limbs, missing limbs, deformed body, disfigured face, bad proportions, duplicate, multiple people, watermark, text, signature, username, logo, plastic skin, doll, mannequin, smooth skin, airbrushed, perfect skin, studio lighting, different person, face change, clothing change",
-    "inference_steps": 60,
-    "guidance_scale": 7.0,
+    "style_modifiers": "professional photography, high quality, detailed, sharp focus, 8k resolution, photorealistic, cinematic lighting, filmed video, unedited raw footage, natural lighting, authentic skin pores, natural imperfections, documentary candid shot",
+    "negative_prompt": "blurry, low quality, distorted, deformed, amateur, grainy, shaky, artifacts, jittery, flickering, unstable, fake, rendered, cgi, 3d, artificial, computer generated, cartoon, anime, illustration, painting, drawing, art, digital art, sketch, bad anatomy, extra limbs, missing limbs, deformed body, disfigured face, bad proportions, duplicate, multiple people, watermark, text, signature, username, logo, plastic skin, doll, mannequin, smooth skin, airbrushed, perfect skin, studio lighting, different person, face change, clothing change",
+    "inference_steps": 40,
+    "guidance_scale": 10.0,
     "controlnet_scales": {
       "pose": 0.85,
       "depth": 0.65,
-      "canny": 0.55
+      "canny": 0.6
     },
     "seed": 424242,
     "base_model": "stablediffusionapi/realistic-vision-v51"

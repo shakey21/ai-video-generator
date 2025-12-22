@@ -11,7 +11,8 @@ class VideoModelReplacer:
         # Enable all advanced features by default
         self.processor = VideoProcessor(
             use_stabilization=True,  # Camera stabilization
-            use_segments=True  # Segment-based processing
+            use_segments=True,  # Segment-based processing
+            enable_upscaling=False  # 4K upscaling (disabled by default - very slow)
         )
         self.output_dir = Path("outputs")
         self.output_dir.mkdir(exist_ok=True)
@@ -21,6 +22,7 @@ class VideoModelReplacer:
         input_video, 
         selected_model, 
         use_background_plate=False,
+        enable_4k_upscale=False,
         progress=gr.Progress()
     ):
         """
@@ -28,8 +30,10 @@ class VideoModelReplacer:
         - Camera stabilization
         - Segment-based generation (3 segments)
         - Foot locking
-        - Temporal consistency
-        - Optional background plate extraction
+        - Temporal consistency with optical flow
+        - Color correction to match original
+        - Temporal denoising
+        - Optional 4K upscaling
         """
         
         if input_video is None:
@@ -38,8 +42,9 @@ class VideoModelReplacer:
         try:
             progress(0, desc="Initializing...")
             
-            # Update processor to use selected model
+            # Update processor to use selected model and upscaling setting
             self.processor.generator.model_name = selected_model
+            self.processor.enable_upscaling = enable_4k_upscale
             
             output_path = self.processor.replace_model(
                 video_path=input_video,
@@ -96,20 +101,29 @@ def create_ui():
                         value=False,
                         info="Extract clean background for potential replacement"
                     )
+                    
+                    enable_4k = gr.Checkbox(
+                        label="4K Upscaling (Real-ESRGAN)",
+                        value=False,
+                        info="⚠️ Very slow! Upscale output to 4K resolution"
+                    )
+                    
+                    gr.Markdown("### Quality Features (Always On)")
+                    gr.Markdown("✅ 1080p HD Output  \n✅ Color Correction  \n✅ Temporal Denoising  \n✅ Optical Flow Smoothing")
                 
                 process_btn = gr.Button("Process Video", variant="primary", size="lg")
             
             with gr.Column(scale=1):
                 output_video = gr.Video(label="Output Video")
         
-        def process_with_model_key(input_video, selected_display_name, use_bg_plate, progress=gr.Progress()):
+        def process_with_model_key(input_video, selected_display_name, use_bg_plate, enable_4k_upscale, progress=gr.Progress()):
             # Convert display name to model key
             model_key = model_choices.get(selected_display_name, "default_model")
-            return replacer.process_video(input_video, model_key, use_bg_plate, progress)
+            return replacer.process_video(input_video, model_key, use_bg_plate, enable_4k_upscale, progress)
         
         process_btn.click(
             fn=process_with_model_key,
-            inputs=[input_video, model_selector, use_bg_plate],
+            inputs=[input_video, model_selector, use_bg_plate, enable_4k],
             outputs=[output_video]
         )
     

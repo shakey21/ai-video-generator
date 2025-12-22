@@ -14,7 +14,7 @@ from utils.foot_lock import FootLocker
 from utils.background import BackgroundExtractor
 
 class VideoProcessor:
-    def __init__(self, use_stabilization: bool = True, use_segments: bool = True):
+    def __init__(self, use_stabilization: bool = True, use_segments: bool = True, enable_upscaling: bool = False):
         self.detector = PersonDetector()
         self.generator = ModelGenerator()
         self.stabilizer = VideoStabilizer() if use_stabilization else None
@@ -23,6 +23,9 @@ class VideoProcessor:
         self.bg_extractor = BackgroundExtractor()
         self.prev_frame = None  # For optical flow
         self.prev_generated = None  # For temporal blending
+        self.frame_buffer = []  # For temporal denoising
+        self.enable_upscaling = enable_upscaling
+        self.upscaler = None  # Lazy load Real-ESRGAN
     
     def replace_model(
         self,
@@ -46,6 +49,7 @@ class VideoProcessor:
         self.generator.reset_temporal_state()
         self.prev_frame = None
         self.prev_generated = None
+        self.frame_buffer = []  # Reset frame buffer for new video
         
         print(f"🎬 Loading video: {video_path}")
         
@@ -170,6 +174,7 @@ class VideoProcessor:
         # Reset temporal state for new segment
         self.prev_frame = None
         self.prev_generated = None
+        self.frame_buffer = []  # Reset buffer for new segment
         
         for i, frame in enumerate(tqdm(frames, desc=f"Segment {segment_id + 1}")):
             # Extract control signals
@@ -193,6 +198,9 @@ class VideoProcessor:
                         frame, self.prev_frame, generated, self.prev_generated
                     )
                 
+                # Match color grading to original
+                generated = self._match_color_grading(generated, frame, mask)
+                
                 # Composite
                 if bg_plate is not None:
                     # Use background plate
@@ -200,6 +208,13 @@ class VideoProcessor:
                 else:
                     # Use original background
                     result = self._composite_with_background(generated, frame, mask)
+                
+                # Apply temporal denoising
+                result = self._temporal_denoise(result, buffer_size=3)
+                
+                # Optional 4K upscaling
+                if self.enable_upscaling:
+                    result = self._upscale_4k(result)
                 
                 self.prev_generated = generated.copy()
             else:
@@ -323,3 +338,109 @@ class VideoProcessor:
         result = cv2.addWeighted(curr_generated, 0.7, warped_prev, 0.3, 0)
         
         return result
+    
+    def _match_color_grading(
+        self,
+        generated: np.ndarray,
+        reference: np.ndarray,
+        mask: np.ndarray = None
+    ) -> np.ndarray:
+        """Match color grading of generated image to reference"""
+        # Convert to LAB color space for better color transfer
+        generated_lab = cv2.cvtColor(generated, cv2.COLOR_BGR2LAB).astype(np.float32)
+        reference_lab = cv2.cvtColor(reference, cv2.COLOR_BGR2LAB).astype(np.float32)
+        
+        # Calculate statistics for each channel
+        for i in range(3):
+            if mask is not None:
+                # Only match colors within the masked region
+                mask_bool = mask > 128
+                gen_channel = generated_lab[:, :, i][mask_bool]
+                ref_channel = reference_lab[:, :, i][mask_bool]
+                
+                # Skip if mask is empty
+                if len(gen_channel) == 0:
+                    continue
+            else:
+                gen_channel = generated_lab[:, :, i].flatten()
+                ref_channel = reference_lab[:, :, i].flatten()
+            
+            # Calculate mean and std
+            gen_mean, gen_std = gen_channel.mean(), gen_channel.std()
+            ref_mean, ref_std = ref_channel.mean(), ref_channel.std()
+            
+            # Transfer color statistics
+            if gen_std > 0:
+                generated_lab[:, :, i] = (
+                    (generated_lab[:, :, i] - gen_mean) * (ref_std / gen_std) + ref_mean
+                )
+        
+        # Clip values and convert back to BGR
+        generated_lab = np.clip(generated_lab, 0, 255)
+        result = cv2.cvtColor(generated_lab.astype(np.uint8), cv2.COLOR_LAB2BGR)
+        
+        return result
+    
+    def _temporal_denoise(
+        self,
+        frame: np.ndarray,
+        buffer_size: int = 3
+    ) -> np.ndarray:
+        """Apply temporal denoising using frame averaging"""
+        # Add current frame to buffer
+        self.frame_buffer.append(frame.copy())
+        
+        # Keep buffer size limited
+        if len(self.frame_buffer) > buffer_size:
+            self.frame_buffer.pop(0)
+        
+        # If buffer not full enough, return original
+        if len(self.frame_buffer) < 2:
+            return frame
+        
+        # Weighted average with more weight on recent frames
+        weights = np.linspace(0.5, 1.0, len(self.frame_buffer))
+        weights = weights / weights.sum()
+        
+        denoised = np.zeros_like(frame, dtype=np.float32)
+        for w, f in zip(weights, self.frame_buffer):
+            denoised += w * f.astype(np.float32)
+        
+        return denoised.astype(np.uint8)
+    
+    def _upscale_4k(
+        self,
+        frame: np.ndarray
+    ) -> np.ndarray:
+        """Upscale frame to 4K using Real-ESRGAN"""
+        if not self.enable_upscaling:
+            return frame
+        
+        # Lazy load upscaler
+        if self.upscaler is None:
+            try:
+                from realesrgan import RealESRGANer
+                from basicsr.archs.rrdbnet_arch import RRDBNet
+                
+                model = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=64, num_block=23, num_grow_ch=32, scale=4)
+                self.upscaler = RealESRGANer(
+                    scale=4,
+                    model_path='https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth',
+                    model=model,
+                    tile=400,
+                    tile_pad=10,
+                    pre_pad=0,
+                    half=torch.cuda.is_available()
+                )
+                print("🚀 Loaded Real-ESRGAN 4K upscaler")
+            except ImportError:
+                print("⚠️  Real-ESRGAN not available, skipping upscaling")
+                self.enable_upscaling = False
+                return frame
+        
+        try:
+            output, _ = self.upscaler.enhance(frame, outscale=4)
+            return output
+        except Exception as e:
+            print(f"⚠️  Upscaling failed: {e}")
+            return frame

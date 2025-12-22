@@ -206,17 +206,21 @@ class ModelGenerator:
         return images
     
     def _get_generation_size(self, h: int, w: int) -> Tuple[int, int]:
-        """Get optimal generation size (must be divisible by 8)"""
-        # Keep original aspect ratio, round to nearest 64 for quality
-        target = 768  # Good balance between quality and speed
+        """Get optimal generation size for 1080p output (must be divisible by 8)"""
+        # Target 1080p resolution for high quality
+        target_h = 1080
+        target_w = 1920
         
+        # Calculate aspect ratio
         aspect = w / h
-        if w > h:
-            gen_w = target
-            gen_h = int(target / aspect)
-        else:
-            gen_h = target
-            gen_w = int(target * aspect)
+        
+        # Adjust to match video aspect ratio while maintaining quality
+        if aspect > 1.0:  # Landscape
+            gen_w = min(target_w, w)
+            gen_h = int(gen_w / aspect)
+        else:  # Portrait
+            gen_h = min(target_h, h)
+            gen_w = int(gen_h * aspect)
         
         # Round to nearest 64 (SD works best with this)
         gen_h = (gen_h // 64) * 64
