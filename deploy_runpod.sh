@@ -39,9 +39,9 @@ controlnet_canny = ControlNetModel.from_pretrained(
     torch_dtype=torch.float16
 )
 
-print("Downloading Realistic Stable Diffusion 1.5...")
+print("Downloading Realistic Vision v5.1...")
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
-    "runwayml/stable-diffusion-v1-5",
+    "stablediffusionapi/realistic-vision-v51",
     controlnet=[controlnet_pose, controlnet_depth, controlnet_canny],
     torch_dtype=torch.float16,
     safety_checker=None,

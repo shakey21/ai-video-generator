@@ -1,17 +1,17 @@
 {
   "default_model": {
     "name": "Bop-Style Video Influencer",
-    "base_prompt": "1girl, 22 year old blonde woman with shoulder-length wavy hair, hazel green eyes, small nose, full lips with natural pink gloss, smooth fair skin with light freckles, heart-shaped face with high cheekbones, 5'4\" height, curvy athletic physique with 34C-26-36 measurements, toned legs and arms, defined waist, rounded hips, confident relaxed expression, wearing tight black ribbed crop top and high-waisted gray athletic shorts",
-    "style_modifiers": "photorealistic, RAW photo, 8k uhd, dslr, soft lighting, high quality, film grain, natural skin texture, realistic shadows, depth of field, bokeh background, professional photography",
-    "negative_prompt": "cartoon, anime, illustration, painting, drawing, 3d render, cgi, art, sketch, low quality, low resolution, blurry, distorted, bad anatomy, extra limbs, missing limbs, deformed body, disfigured face, bad proportions, duplicate, multiple people, watermark, text, signature, username, logo, asian, african, old, child, different person, face change, clothing change",
-    "inference_steps": 50,
-    "guidance_scale": 7.5,
+    "base_prompt": "raw footage, filmed video, real person, 22 year old blonde woman with shoulder-length wavy hair, hazel green eyes, small nose, full lips with natural pink gloss, smooth fair skin with light freckles, heart-shaped face with high cheekbones, 5'4\" height, curvy athletic physique with 34C-26-36 measurements, toned legs and arms, defined waist, rounded hips, confident relaxed expression, wearing tight black ribbed crop top and high-waisted gray athletic shorts",
+    "style_modifiers": "hyperrealistic, filmed footage, real video capture, natural lighting, handheld camera, authentic skin pores, natural imperfections, candid shot, documentary style, 4k video, realistic motion blur, real photography, unedited raw footage",
+    "negative_prompt": "fake, rendered, cgi, 3d, artificial, computer generated, cartoon, anime, illustration, painting, drawing, art, digital art, sketch, low quality, low resolution, blurry, distorted, bad anatomy, extra limbs, missing limbs, deformed body, disfigured face, bad proportions, duplicate, multiple people, watermark, text, signature, username, logo, plastic skin, doll, mannequin, smooth skin, airbrushed, perfect skin, studio lighting, different person, face change, clothing change",
+    "inference_steps": 60,
+    "guidance_scale": 7.0,
     "controlnet_scales": {
       "pose": 0.85,
       "depth": 0.65,
       "canny": 0.55
     },
     "seed": 424242,
-    "base_model": "runwayml/stable-diffusion-v1-5"
+    "base_model": "stablediffusionapi/realistic-vision-v51"
   }
 }
