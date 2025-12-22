@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Project specific
+outputs/
+api_uploads/
+api_outputs/
+*.mp4
+*.avi
+*.mov
+*.log
+
+# AI Models (too large for git)
+*.pt
+*.pth
+*.safetensors
+*.ckpt
+
+# Models cache
+.cache/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

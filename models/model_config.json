@@ -1,0 +1,19 @@
+{
+  "default_model": {
+    "name": "Bop-Style Video Influencer",
+    "base_prompt": "early-20s blonde woman, 5'4\" tall, curvy athletic build, defined waist and hips, toned legs, soft feminine face, expressive eyes, glossy lips, relaxed confident expression",
+    "style_modifiers": "tiktok influencer aesthetic, handheld camera look, casual video, natural skin, slight motion blur, warm lighting, photorealistic",
+    "clothing_preferences": [
+      "high-waisted gym shorts",
+      "scrunch-back leggings",
+      "tight ribbed crop tops",
+      "form-fitting bodysuit",
+      "minimal lounge sets"
+    ],
+    "fashion_notes": "body-hugging fabrics, thin stretchy materials, casual at-home wear, slightly imperfect fit, influencer loungewear aesthetic",
+    "negative_prompt": "studio lighting, fashion editorial look, glamour photography, stiff posing, frozen expressions, overly sharp focus, blurry, distorted, bad anatomy, extra limbs, cartoon, anime, illustration",
+    "inference_steps": 30,
+    "guidance_scale": 20,
+    "seed": 42
+  }
+}
