@@ -94,7 +94,7 @@ class ModelGenerator:
         steps = num_inference_steps if num_inference_steps else self.config.get_inference_steps(self.model_name)
         guidance = self.config.get_guidance_scale(self.model_name)
         
-        # Generate with consistent seed for same character
+        # Generate with consistent seed for same character at high resolution
         with torch.inference_mode():
             result = self.pipe(
                 prompt=full_prompt,
@@ -103,7 +103,9 @@ class ModelGenerator:
                 num_inference_steps=steps,
                 controlnet_conditioning_scale=1.0,  # Full pose control
                 generator=torch.Generator(device=self.device).manual_seed(self.prev_seed),
-                guidance_scale=guidance
+                guidance_scale=guidance,
+                height=768,  # Higher resolution than default 512
+                width=768
             ).images[0]
         
         # Convert back to OpenCV format

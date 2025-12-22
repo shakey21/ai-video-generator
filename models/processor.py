@@ -58,13 +58,19 @@ class VideoProcessor:
                     # Generate replacement (uses JSON config)
                     generated = self.generator.generate_replacement(pose_image)
                     
-                    # Resize to match frame
+                    # High-quality resize to match frame
                     if generated.shape[:2] != frame.shape[:2]:
+                        # Use LANCZOS4 for best quality downscaling/upscaling
                         generated = cv2.resize(
                             generated,
                             (frame.shape[1], frame.shape[0]),
-                            interpolation=cv2.INTER_LANCZOS4  # High-quality resize
+                            interpolation=cv2.INTER_LANCZOS4
                         )
+                        # Apply subtle sharpening after resize to restore detail
+                        kernel = np.array([[-0.5, -0.5, -0.5],
+                                          [-0.5,  5.0, -0.5],
+                                          [-0.5, -0.5, -0.5]])
+                        generated = cv2.filter2D(generated, -1, kernel * 0.3)
                     
                     # Create smooth mask
                     mask_3ch = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR).astype(float) / 255.0
