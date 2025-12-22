@@ -32,13 +32,12 @@ class VideoWriter:
         Args:
             quality: 'high' for maximum quality
         """
-        # Try H.264 codecs in order of preference
-        codecs = [
-            ('avc1', 'H.264 AVC'),
-            ('H264', 'H.264'),
-            ('X264', 'x264'),
-            ('mp4v', 'MPEG-4 fallback')
-        ]
+        # Suppress OpenCV warnings during codec detection
+        import os
+        os.environ['OPENCV_FFMPEG_LOGLEVEL'] = '-8'
+        
+        # Try H.264 codecs in order of preference (silently)
+        codecs = [('avc1', 'H.264'), ('mp4v', 'MPEG-4')]
         
         self.writer = None
         self.output_path = output_path
@@ -48,7 +47,6 @@ class VideoWriter:
             writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
             if writer.isOpened():
                 self.writer = writer
-                print(f"Using {name} codec for high-quality output")
                 break
             writer.release()
         

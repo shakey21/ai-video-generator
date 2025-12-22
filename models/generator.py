@@ -62,12 +62,16 @@ class ModelGenerator:
         print(f"   Base model: {base_model}")
         
         # Load Stable Diffusion with multi-ControlNet
-        self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            base_model,
-            controlnet=controlnets,
-            torch_dtype=dtype,
-            safety_checker=None
-        )
+        import warnings
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', message='.*torch_dtype.*')
+            warnings.filterwarnings('ignore', message='.*CLIPFeatureExtractor.*')
+            self.pipe = StableDiffusionControlNetPipeline.from_pretrained(
+                base_model,
+                controlnet=controlnets,
+                torch_dtype=dtype,
+                safety_checker=None
+            )
         
         # Use high-quality scheduler for photorealism
         self.pipe.scheduler = UniPCMultistepScheduler.from_config(
@@ -78,7 +82,9 @@ class ModelGenerator:
         
         # Enable memory optimizations
         self.pipe.enable_attention_slicing()
-        if hasattr(self.pipe, 'enable_vae_slicing'):
+        if hasattr(self.pipe.vae, 'enable_slicing'):
+            self.pipe.vae.enable_slicing()
+        elif hasattr(self.pipe, 'enable_vae_slicing'):
             self.pipe.enable_vae_slicing()
         
         # Device-specific optimizations
