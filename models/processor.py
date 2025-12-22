@@ -216,11 +216,12 @@ class VideoProcessor:
         # Apply foot locking to entire segment
         if pose_keypoints and all(kp is not None for kp in pose_keypoints):
             print("👣 Applying foot locking...")
-            foot_contacts = self.foot_locker.detect_foot_contacts(pose_keypoints)
+            left_contacts, right_contacts = self.foot_locker.detect_foot_contacts(pose_keypoints)
             processed_frames = self.foot_locker.apply_foot_lock(
                 processed_frames,
                 pose_keypoints,
-                foot_contacts
+                left_contacts,
+                right_contacts
             )
         
         return processed_frames
