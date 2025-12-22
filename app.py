@@ -8,12 +8,29 @@ from models.config_loader import ModelConfig
 
 class VideoModelReplacer:
     def __init__(self):
-        self.processor = VideoProcessor()
+        # Enable all advanced features by default
+        self.processor = VideoProcessor(
+            use_stabilization=True,  # Camera stabilization
+            use_segments=True  # Segment-based processing
+        )
         self.output_dir = Path("outputs")
         self.output_dir.mkdir(exist_ok=True)
     
-    def process_video(self, input_video, selected_model, progress=gr.Progress()):
-        """Process video and replace human model with AI-generated person from JSON config"""
+    def process_video(
+        self, 
+        input_video, 
+        selected_model, 
+        use_background_plate=False,
+        progress=gr.Progress()
+    ):
+        """
+        Process video with advanced features:
+        - Camera stabilization
+        - Segment-based generation (3 segments)
+        - Foot locking
+        - Temporal consistency
+        - Optional background plate extraction
+        """
         
         if input_video is None:
             return None
@@ -27,6 +44,7 @@ class VideoModelReplacer:
             output_path = self.processor.replace_model(
                 video_path=input_video,
                 model_description=None,  # Uses JSON config
+                use_background_plate=use_background_plate,
                 progress_callback=progress
             )
             
@@ -35,6 +53,8 @@ class VideoModelReplacer:
             
         except Exception as e:
             print(f"Error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return None
 
 def create_ui():
@@ -70,19 +90,33 @@ def create_ui():
                     interactive=True
                 )
                 
+                with gr.Accordion("Advanced Options", open=False):
+                    use_bg_plate = gr.Checkbox(
+                        label="Extract Background Plate",
+                        value=False,
+                        info="Extract clean background for potential replacement"
+                    )
+                    gr.Markdown("""
+                    **Enabled by default:**
+                    - 📹 Camera Stabilization
+                    - 🎬 Segment-based Processing (3 segments)
+                    - 👣 Foot Locking
+                    - ⏱️ Enhanced Temporal Consistency
+                    """)
+                
                 process_btn = gr.Button("Process Video", variant="primary", size="lg")
             
             with gr.Column(scale=1):
                 output_video = gr.Video(label="Output Video")
         
-        def process_with_model_key(input_video, selected_display_name, progress=gr.Progress()):
+        def process_with_model_key(input_video, selected_display_name, use_bg_plate, progress=gr.Progress()):
             # Convert display name to model key
             model_key = model_choices.get(selected_display_name, "default_model")
-            return replacer.process_video(input_video, model_key, progress)
+            return replacer.process_video(input_video, model_key, use_bg_plate, progress)
         
         process_btn.click(
             fn=process_with_model_key,
-            inputs=[input_video, model_selector],
+            inputs=[input_video, model_selector, use_bg_plate],
             outputs=[output_video]
         )
     
