@@ -32,7 +32,6 @@ class VideoWriter:
         Args:
             quality: 'high' for maximum quality
         """
-        # Use FFmpeg via OpenCV for better quality control
         # Try H.264 codecs in order of preference
         codecs = [
             ('avc1', 'H.264 AVC'),
@@ -46,16 +45,7 @@ class VideoWriter:
         
         for codec, name in codecs:
             fourcc = cv2.VideoWriter_fourcc(*codec)
-            # Higher quality parameters
-            writer = cv2.VideoWriter(
-                output_path, 
-                fourcc, 
-                fps, 
-                (width, height),
-                params=[
-                    cv2.VIDEOWRITER_PROP_QUALITY, 100,  # Maximum quality
-                ]
-            )
+            writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
             if writer.isOpened():
                 self.writer = writer
                 print(f"Using {name} codec for high-quality output")
