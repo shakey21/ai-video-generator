@@ -10,7 +10,7 @@ echo "🚀 Setting up AI Video Generator on RunPod"
 echo "📦 Updating system packages..."
 apt-get update -qq
 apt-get install -y git ffmpeg libsm6 libxext6 libx264-dev \
-    libavcodec-dev libavformat-dev libswscale-dev screen -qq
+    libavcodec-dev libavformat-dev libswscale-dev -qq
 
 # Install Python dependencies
 echo "🐍 Installing Python packages..."
@@ -74,18 +74,7 @@ print("✓ MiDaS cached")
 EOF
 
 echo ""
-echo "✅ Setup complete!"
+echo "✅ Setup complete! Run your app with:"
+echo "   python app.py"
 echo ""
-echo "🚀 Starting app in detached screen session..."
-screen -dmS ai-video python app.py
-sleep 3
-echo "✅ App is running in background!"
-echo ""
-echo "📱 Useful commands:"
-echo "   screen -r ai-video    # Reattach to see logs"
-echo "   screen -ls            # List all screen sessions"
-echo "   Ctrl+A then D         # Detach from screen (keep running)"
-echo "   Ctrl+C                # Stop the app"
-echo ""
-echo "💡 The app will keep running even if you disconnect!"
-echo "   Access via RunPod's HTTP proxy URL (port 7860)"
+echo "💡 Access via RunPod's HTTP proxy URL (port 7860)"
