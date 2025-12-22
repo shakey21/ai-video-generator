@@ -94,9 +94,17 @@ class PersonDetector:
         # Fallback: empty mask
         return np.zeros((h, w), dtype=np.uint8), None
     
-    def extract_pose(self, frame: np.ndarray) -> Optional[np.ndarray]:
+    def extract_pose(self, frame: np.ndarray, return_keypoints: bool = False):
         """
         Extract pose using YOLO pose estimation
+        
+        Args:
+            frame: Input frame
+            return_keypoints: If True, returns (pose_image, keypoints), else just pose_image
+        
+        Returns:
+            If return_keypoints=False: pose visualization image
+            If return_keypoints=True: tuple of (pose_image, keypoints array)
         """
         # Use YOLO pose model
         pose_model = YOLO('yolov8m-pose.pt')
@@ -108,7 +116,7 @@ class PersonDetector:
             h, w = frame.shape[:2]
             pose_img = np.zeros((h, w, 3), dtype=np.uint8)
             
-            # Get keypoints
+            # Get keypoints (shape: [17, 3] - x, y, confidence)
             keypoints = results[0].keypoints.data[0].cpu().numpy()
             
             # Draw skeleton
@@ -134,8 +142,12 @@ class PersonDetector:
                 if kp[2] > 0.5:  # confidence threshold
                     cv2.circle(pose_img, tuple(map(int, kp[:2])), 5, (255, 255, 255), -1)
             
+            if return_keypoints:
+                return pose_img, keypoints
             return pose_img
         
+        if return_keypoints:
+            return None, None
         return None
     
     def extract_depth(self, frame: np.ndarray) -> Optional[np.ndarray]:
