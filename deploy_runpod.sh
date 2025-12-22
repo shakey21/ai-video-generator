@@ -4,7 +4,7 @@
 
 set -e
 
-echo "🚀 Setting up AI Video Generator on RunPod A100..."
+echo "🚀 Setting up AI Video Generator on RunPod"
 
 # Update system
 echo "📦 Updating system packages..."
@@ -74,7 +74,18 @@ print("✓ MiDaS cached")
 EOF
 
 echo ""
-echo "✅ Setup complete! Run your app with:"
-echo "   python app.py"
+echo "✅ Setup complete!"
 echo ""
-echo "💡 Access via RunPod's HTTP proxy URL (port 7860)"
+echo "🚀 Starting app in detached screen session..."
+screen -dmS ai-video python app.py
+sleep 3
+echo "✅ App is running in background!"
+echo ""
+echo "📱 Useful commands:"
+echo "   screen -r ai-video    # Reattach to see logs"
+echo "   screen -ls            # List all screen sessions"
+echo "   Ctrl+A then D         # Detach from screen (keep running)"
+echo "   Ctrl+C                # Stop the app"
+echo ""
+echo "💡 The app will keep running even if you disconnect!"
+echo "   Access via RunPod's HTTP proxy URL (port 7860)"
