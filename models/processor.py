@@ -141,15 +141,18 @@ class VideoProcessor:
         
         # Warp previous generated frame using flow
         h, w = flow.shape[:2]
-        flow_map = np.column_stack([
-            (np.arange(w) + flow[:, :, 0].flatten()).astype(np.float32),
-            (np.arange(h).repeat(w) + flow[:, :, 1].flatten()).astype(np.float32)
-        ]).reshape(h, w, 2)
+        
+        # Create coordinate grids
+        x_coords, y_coords = np.meshgrid(np.arange(w), np.arange(h))
+        
+        # Apply flow to get warped coordinates
+        flow_map_x = (x_coords + flow[:, :, 0]).astype(np.float32)
+        flow_map_y = (y_coords + flow[:, :, 1]).astype(np.float32)
         
         warped_prev = cv2.remap(
             prev_generated,
-            flow_map,
-            None,
+            flow_map_x,
+            flow_map_y,
             cv2.INTER_LINEAR,
             borderMode=cv2.BORDER_REPLICATE
         )
