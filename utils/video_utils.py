@@ -32,15 +32,24 @@ class VideoWriter:
         Args:
             quality: 'high' for H.264 high quality, 'medium' for faster encoding
         """
-        if quality == 'high':
-            # H.264 codec with high quality
-            fourcc = cv2.VideoWriter_fourcc(*'avc1')
-        else:
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # Try multiple codecs in order of preference for compatibility
+        codecs = [
+            'mp4v',  # MPEG-4 - most compatible
+            'avc1',  # H.264
+            'X264',  # Alternative H.264
+            'XVID'   # Fallback
+        ]
         
-        self.writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+        self.writer = None
+        for codec in codecs:
+            fourcc = cv2.VideoWriter_fourcc(*codec)
+            writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+            if writer.isOpened():
+                self.writer = writer
+                break
+            writer.release()
         
-        if not self.writer.isOpened():
+        if self.writer is None or not self.writer.isOpened():
             raise ValueError(f"Cannot create video writer: {output_path}")
     
     def write(self, frame):
