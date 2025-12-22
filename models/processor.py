@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import torch
+import gc
 from pathlib import Path
 from tqdm import tqdm
 from .detector import PersonDetector
@@ -90,6 +92,11 @@ class VideoProcessor:
                 
                 self.prev_frame = frame.copy()
                 writer.write(result)
+                
+                # Clear CUDA cache every frame to prevent memory buildup
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    gc.collect()
             
         finally:
             reader.release()
