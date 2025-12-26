@@ -7,23 +7,33 @@ __pycache__/
 env/
 venv/
 ENV/
+build/
+dist/
+*.egg-info/
 
 # Project specific
 outputs/
+runs/
+cache/
 api_uploads/
 api_outputs/
 *.mp4
 *.avi
 *.mov
+*.mkv
 *.log
+!example*.mp4
 
 # AI Models (too large for git)
 *.pt
 *.pth
 *.safetensors
 *.ckpt
+*.onnx
+*.h5
 
-# Models cache
+# Cache files
+*.npz
 .cache/
 
 # macOS
@@ -34,3 +44,15 @@ api_outputs/
 .idea/
 *.swp
 *.swo
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Config overrides
+config/user_*.yaml
+config/local_*.yaml
+
+# Archive (old system - uncomment to ignore)
+# archive/

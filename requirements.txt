@@ -1,19 +1,30 @@
-gradio>=4.0.0
-opencv-python>=4.8.0
-torch>=2.0.0
-torchvision>=0.15.0
-diffusers>=0.25.0
-transformers>=4.35.0
-accelerate>=0.25.0
-ultralytics>=8.0.0
-pillow>=10.0.0
-numpy>=1.24.0
-tqdm>=4.65.0
-scipy>=1.11.0
-yt-dlp>=2024.0.0
-controlnet_aux>=0.0.7
-insightface>=0.7.3
-onnxruntime>=1.16.0
-opencv-contrib-python>=4.8.0
-realesrgan>=0.3.0
-basicsr>=1.4.2
+# Python dependencies for MetaHuman Influencer Pipeline
+
+# Core
+pyyaml>=6.0
+requests>=2.31.0
+
+# CLI
+argparse  # Built-in
+tqdm>=4.66.0
+
+# Audio Processing
+# Audio will be imported directly to Unreal Engine
+
+# Video Processing
+# FFmpeg - Install via Homebrew:
+# brew install ffmpeg
+
+# Subtitles
+openai-whisper>=20230314
+
+# Optional: ElevenLabs for premium voice
+# elevenlabs>=0.2.0
+
+# Optional: OpenAI for better script generation
+# openai>=1.0.0
+
+# Development
+pytest>=7.4.0
+black>=23.0.0
+mypy>=1.5.0

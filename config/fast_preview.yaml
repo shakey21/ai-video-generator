@@ -1,0 +1,68 @@
+# MetaHuman Content Creator - Fast Preview
+# Optimized for rapid iteration (2 min for 30s Instagram Reel)
+
+pipeline:
+  stages:
+    - planning
+    - facial
+    - body
+    - scene
+    - unreal
+    - render
+    - post
+
+planning:
+  llm:
+    model: "llama3.1"
+    max_tokens: 1000
+  concept:
+    target_duration: 30
+
+facial:
+  method: "procedural"
+  procedural:
+    add_blinks: true
+    blink_interval: [4.0, 7.0]
+    add_eye_movement: false
+    add_head_movement: false
+    expression_variety: 0.2
+  export:
+    frame_rate: 24
+
+body:
+  behavior:
+    movement_frequency: 0.7
+    energy_level: "medium"
+    randomize_sequences: false
+
+scene:
+  template: "Studio_Minimal_001"
+
+render:
+  frame_rate: 24
+  quality: "draft"
+  anti_aliasing:
+    spatial_samples: 1
+    temporal_samples: 1
+  output:
+    format: "h264"
+  timeout: 600
+
+post:
+  audio_mix:
+    background_music: null
+  subtitles:
+    enabled: false
+
+qa:
+  checks:
+    - video_duration
+
+publish:
+  platforms:
+    - tiktok
+  thumbnails:
+    enabled: false
+
+logging:
+  level: "WARNING"

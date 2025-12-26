@@ -1,0 +1,135 @@
+# MetaHuman Content Creator - Default Configuration
+# Balanced quality and speed for Instagram Reels production
+
+project:
+  name: "ai-metahuman-content-creator"
+  version: "1.0.0"
+
+pipeline:
+  stages:
+    - planning
+    - facial
+    - body
+    - scene
+    - unreal
+    - render
+    - post
+    - qa
+    - publish
+  
+  cache_enabled: true
+  skip_completed_stages: true
+
+# Stage 1: Content Planning
+planning:
+  llm:
+    provider: "ollama"
+    model: "llama3.1"
+    base_url: "http://localhost:11434"
+    temperature: 0.7
+    max_tokens: 2000
+  
+  concept:
+    target_duration: 30
+    format: "hook_build_peak_close"
+
+# Stage 2: Facial Animation
+facial:
+  method: "procedural"
+  procedural:
+    add_blinks: true
+    blink_interval: [3.0, 6.0]
+    add_eye_movement: true
+    add_head_movement: true
+    expression_variety: 0.3
+  export:
+    format: "json"
+    frame_rate: 30
+
+# Stage 3: Body Animation
+body:
+  dance_library: "shared_assets/animation_library/dances"
+  movement_library: "shared_assets/animation_library/movements"
+  idle_library: "shared_assets/animation_library/idles"
+  behavior:
+    movement_frequency: 0.8
+    dance_style: "modern"
+    energy_level: "high"
+    randomize_sequences: true
+
+# Stage 4: Scene Selection
+scene:
+  template: "auto"
+  template_library: "unreal_project/Content/Scenes"
+  camera:
+    type: "static"
+    position: [250, 0, 160]
+
+# Stage 5: Unreal Assembly
+unreal:
+  project_path: "/Users/YOU/UnrealProjects/MetaHumanInfluencer/MetaHumanInfluencer.uproject"
+  editor_path: "/Users/Shared/Epic Games/UE_5.3/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor"
+  python_scripts:
+    assemble: "unreal_scripts/assemble_sequence.py"
+
+# Stage 6: Rendering
+render:
+  resolution: [1080, 1920]
+  frame_rate: 30
+  quality: "medium"
+  anti_aliasing:
+    spatial_samples: 4
+    temporal_samples: 4
+  output:
+    format: "prores422hq"
+  timeout: 1800
+
+# Stage 8: Post-Processing
+post:
+  audio_mix:
+    narration_level: -3.0
+    music_level: -18.0
+    normalize_lufs: -14.0
+  subtitles:
+    enabled: true
+    engine: "whisper"
+    model: "base"
+    style:
+      font: "Montserrat-Bold"
+      size: 72
+      color: "#FFFFFF"
+
+# Stage 9: Quality Assurance
+qa:
+  checks:
+    - video_duration
+    - audio_levels
+    - black_frames
+  thresholds:
+    duration_tolerance: 2.0
+    min_audio_lufs: -16.0
+    max_audio_lufs: -12.0
+
+# Stage 10: Publishing Prep
+publish:
+  platforms:
+    - tiktok
+    - instagram_reels
+    - youtube_shorts
+  thumbnails:
+    enabled: true
+    count: 3
+
+# Logging
+logging:
+  level: "INFO"
+  format: "json"
+  output:
+    console: true
+    file: "runs/{run_id}/logs/pipeline.log"
+
+# Caching
+cache:
+  strategy: "content_hash"
+  hash_algorithm: "sha256"
+  max_age_days: 30

@@ -1,0 +1,66 @@
+{
+  "influencer_id": "influencer_001",
+  "display_name": "TechTips AI",
+  "description": "Tech education influencer specializing in Apple Silicon, AI tools, and productivity",
+  
+  "persona": {
+    "tone": "friendly_expert",
+    "energy_level": "medium",
+    "vocabulary_level": "accessible",
+    "humor": "occasional",
+    "formality": "casual_professional"
+  },
+  
+  "content": {
+    "topics": [
+      "Apple Silicon",
+      "AI tools",
+      "productivity",
+      "Mac workflows",
+      "creative software"
+    ],
+    "target_audience": "tech-savvy creators 25-40",
+    "video_style": "educational_entertainment",
+    "typical_duration": 45
+  },
+  
+  "appearance": {
+    "metahuman_blueprint": "/Game/MetaHumans/TechTipsAI/BP_TechTipsAI",
+    "style": "casual_professional",
+    "clothing": "tech_hoodie"
+  },
+  
+  "animation": {
+    "facial_style": "expressive",
+    "gesture_frequency": 0.12,
+    "energy_multiplier": 1.0,
+    "preferred_gestures": [
+      "point_forward",
+      "hands_open_explain",
+      "thinking_hand_on_chin"
+    ]
+  },
+  
+  "branding": {
+    "primary_color": "#00D9FF",
+    "secondary_color": "#FF006E",
+    "logo_path": "overlays/logo.png",
+    "lower_third_template": "overlays/lower_third.png",
+    "font": "Montserrat"
+  },
+  
+  "platforms": {
+    "tiktok": {
+      "enabled": true,
+      "handle": "@techtips_ai"
+    },
+    "instagram": {
+      "enabled": true,
+      "handle": "@techtips.ai"
+    },
+    "youtube": {
+      "enabled": true,
+      "channel": "TechTips AI"
+    }
+  }
+}

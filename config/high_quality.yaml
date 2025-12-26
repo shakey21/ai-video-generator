@@ -1,0 +1,99 @@
+# MetaHuman Content Creator - High Quality
+# Maximum quality for viral Instagram Reels (10 min for 30s reel)
+
+pipeline:
+  stages:
+    - planning
+    - facial
+    - body
+    - scene
+    - unreal
+    - render
+    - post
+    - qa
+    - publish
+
+planning:
+  llm:
+    model: "llama3.1"
+    temperature: 0.6
+    max_tokens: 3000
+  concept:
+    target_duration: 30
+
+facial:
+  method: "procedural"
+  procedural:
+    add_blinks: true
+    blink_interval: [2.5, 5.0]
+    add_eye_movement: true
+    add_head_movement: true
+    expression_variety: 0.5
+  export:
+    format: "json"
+    frame_rate: 60
+
+body:
+  behavior:
+    movement_frequency: 0.9
+    energy_level: "high"
+    randomize_sequences: true
+
+scene:
+  template: "auto"
+  lighting:
+    preset: "cinematic"
+  camera:
+    type: "static"
+    position: [250, 0, 160]
+
+render:
+  frame_rate: 60
+  quality: "final"
+  resolution: [1080, 1920]
+  anti_aliasing:
+    spatial_samples: 16
+    temporal_samples: 8
+  output:
+    format: "prores422hq"
+  timeout: 1800
+
+post:
+  audio_mix:
+    music_level: -12.0
+  color_grading:
+    enabled: true
+    lut: "instagram_vibrant"
+  encoding:
+    bitrate: 12000000
+    codec: "h264"
+
+qa:
+  checks:
+    - video_duration
+    - resolution
+    - frame_rate
+    - black_frames
+    - file_size
+    - motion_smoothness
+  thresholds:
+    duration_tolerance: 2.0
+    max_black_frames: 0
+    max_file_size: 100000000
+
+publish:
+  platform: "instagram_reels"
+  optimization:
+    bitrate: 10000000
+    format: "mp4"
+    tiktok:
+      bitrate: "12000k"
+      preset: "slow"
+  thumbnails:
+    enabled: true
+    count: 5
+    quality: 98
+
+logging:
+  level: "DEBUG"
+  stage_timing: true

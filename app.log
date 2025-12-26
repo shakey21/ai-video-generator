@@ -1,8 +1,0 @@
-/Users/thomasshakespeare/VSCode/ai-video-generator/venv/lib/python3.13/site-packages/torch/amp/autocast_mode.py:270: UserWarning: User provided device_type of 'cuda', but CUDA is not available. Disabling
-  warnings.warn(
-/Users/thomasshakespeare/VSCode/ai-video-generator/app.py:38: UserWarning: The parameters have been moved from the Blocks constructor to the launch() method in Gradio 6.0: theme, css. Please pass these parameters to launch() instead.
-  with gr.Blocks(title="AI Video Model Replacer", theme=gr.themes.Soft(), css=css) as app:
-Loading YOLOv8 person detector...
-Person detector loaded
-Using device: mps (Apple M4 Pro)
-Loaded model config: Blonde Instagram Model
